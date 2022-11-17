@@ -45,6 +45,7 @@ var queue = "products";
 var createProductQueue = "createProduct";
 var updateProductQueue = "updateProduct";
 var deleteProductQueue = "deleteProduct";
+var axios_1 = require("axios");
 var PORT = 8001;
 // to initialize initial connection with the database, register all entities
 // and "synchronize" database schema, call "initialize()" method of a newly created database
@@ -163,6 +164,26 @@ data_source_1.AppDataSource.initialize()
                             case 1:
                                 products = _a.sent();
                                 return [2 /*return*/, res.send(products)];
+                        }
+                    });
+                }); });
+                app.post("/api/products/:id/like", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+                    var product;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, productRepository.findOneBy({
+                                    id: req.params.id,
+                                })];
+                            case 1:
+                                product = _a.sent();
+                                return [4 /*yield*/, axios_1.default.post("http://localhost:8000/api/products/".concat(product.admin_id, "/like"), {})];
+                            case 2:
+                                _a.sent();
+                                product.likes++;
+                                return [4 /*yield*/, productRepository.save(product)];
+                            case 3:
+                                _a.sent();
+                                return [2 /*return*/, res.send(product)];
                         }
                     });
                 }); });

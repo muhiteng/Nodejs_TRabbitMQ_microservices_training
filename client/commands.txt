@@ -17,3 +17,6 @@ npm i mongodb
 //https://www.cloudamqp.com/
 npm i amqplib
 npm i -D @types/amqplib
+
+// install axios
+npm i axios

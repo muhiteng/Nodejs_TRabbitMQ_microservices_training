@@ -9,6 +9,7 @@ const createProductQueue = "createProduct";
 const updateProductQueue = "updateProduct";
 const deleteProductQueue = "deleteProduct";
 
+import axios from "axios";
 const PORT = 8001;
 
 // to initialize initial connection with the database, register all entities
@@ -102,6 +103,22 @@ AppDataSource.initialize()
             const products = await productRepository.find();
             return res.send(products);
           });
+
+          app.post(
+            "/api/products/:id/like",
+            async (req: Request, res: Response) => {
+              const product = await productRepository.findOneBy({
+                id: req.params.id,
+              });
+              await axios.post(
+                `http://localhost:8000/api/products/${product.admin_id}/like`,
+                {}
+              );
+              product.likes++;
+              await productRepository.save(product);
+              return res.send(product);
+            }
+          );
 
           app.listen(PORT, () => {
             console.log(`Server working on port ${PORT}`);
