@@ -55,6 +55,15 @@ AppDataSource.initialize()
       return res.send(result);
     });
 
+    app.post("/api/products/:id/like", async (req: Request, res: Response) => {
+      const product = await productRepository.findOneBy({
+        id: req.params.id,
+      });
+      product.likes++;
+      const result = await productRepository.save(product);
+      return res.send(result);
+    });
+
     app.listen(PORT, () => {
       console.log(`Server working on port ${PORT}`);
     });
