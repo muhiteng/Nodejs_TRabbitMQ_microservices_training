@@ -41,6 +41,7 @@ var cors = require("cors");
 var data_source_1 = require("./entity/data-source");
 var product_1 = require("./entity/product");
 var amqplib = require("amqplib/callback_api");
+var queue = "products";
 var PORT = 8001;
 // to initialize initial connection with the database, register all entities
 // and "synchronize" database schema, call "initialize()" method of a newly created database
@@ -55,6 +56,17 @@ data_source_1.AppDataSource.initialize()
             conn.createChannel(function (err, ch2) {
                 if (err)
                     throw err;
+                ch2.assertQueue(queue);
+                // Rabbitmq listener
+                ch2.consume(queue, function (msg) {
+                    if (msg !== null) {
+                        console.log(msg.content.toString());
+                        ch2.ack(msg);
+                    }
+                    else {
+                        console.log("Consumer cancelled by server");
+                    }
+                });
                 var app = express();
                 app.use(express.json());
                 app.use(cors({ origins: ["http://localhost:3000"] }));

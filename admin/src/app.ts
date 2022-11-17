@@ -4,6 +4,7 @@ import * as cors from "cors";
 import { AppDataSource } from "./entity/data-source";
 import { Product } from "./entity/product";
 const amqplib = require("amqplib/callback_api");
+const queue = "products";
 
 const PORT = 8000;
 
@@ -18,7 +19,7 @@ AppDataSource.initialize()
       "amqps://kiubzbaf:SzQ8y_I46ITK_aLw1O9nIKNn3pNEmacU@woodpecker.rmq.cloudamqp.com/kiubzbaf",
       (err, conn) => {
         if (err) throw err;
-        conn.createChannel((err, ch2) => {
+        conn.createChannel((err, ch) => {
           if (err) throw err;
           const app = express();
           app.use(express.json());
@@ -31,6 +32,11 @@ AppDataSource.initialize()
           app.get("/api/products", async (req: Request, res: Response) => {
             const products = await productRepository.find();
 
+            // rabbitmq sender
+            ch.assertQueue(queue);
+            
+              ch.sendToQueue(queue, Buffer.from("sended products"));
+           
             res.status(200).json(products);
           });
 

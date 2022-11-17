@@ -41,6 +41,7 @@ var cors = require("cors");
 var data_source_1 = require("./entity/data-source");
 var product_1 = require("./entity/product");
 var amqplib = require("amqplib/callback_api");
+var queue = "products";
 var PORT = 8000;
 // to initialize initial connection with the database, register all entities
 // and "synchronize" database schema, call "initialize()" method of a newly created database
@@ -52,7 +53,7 @@ data_source_1.AppDataSource.initialize()
         amqplib.connect("amqps://kiubzbaf:SzQ8y_I46ITK_aLw1O9nIKNn3pNEmacU@woodpecker.rmq.cloudamqp.com/kiubzbaf", function (err, conn) {
             if (err)
                 throw err;
-            conn.createChannel(function (err, ch2) {
+            conn.createChannel(function (err, ch) {
                 if (err)
                     throw err;
                 var app = express();
@@ -68,6 +69,9 @@ data_source_1.AppDataSource.initialize()
                             case 0: return [4 /*yield*/, productRepository.find()];
                             case 1:
                                 products = _a.sent();
+                                // rabbitmq sender
+                                ch.assertQueue(queue);
+                                ch.sendToQueue(queue, Buffer.from("sended products"));
                                 res.status(200).json(products);
                                 return [2 /*return*/];
                         }

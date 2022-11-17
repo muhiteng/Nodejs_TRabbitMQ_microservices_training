@@ -4,6 +4,7 @@ import * as cors from "cors";
 import { AppDataSource } from "./entity/data-source";
 import { Product } from "./entity/product";
 const amqplib = require("amqplib/callback_api");
+const queue = "products";
 
 const PORT = 8001;
 
@@ -19,6 +20,17 @@ AppDataSource.initialize()
         if (err) throw err;
         conn.createChannel((err, ch2) => {
           if (err) throw err;
+          ch2.assertQueue(queue);
+
+          // Rabbitmq listener
+          ch2.consume(queue, (msg) => {
+            if (msg !== null) {
+              console.log(msg.content.toString());
+              ch2.ack(msg);
+            } else {
+              console.log("Consumer cancelled by server");
+            }
+          });
           const app = express();
           app.use(express.json());
 
