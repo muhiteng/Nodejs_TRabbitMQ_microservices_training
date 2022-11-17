@@ -1,0 +1,4 @@
+npm init -y
+npm i express 
+npm i cors
+npm i -D @types/express @types/node nodemon typescript
