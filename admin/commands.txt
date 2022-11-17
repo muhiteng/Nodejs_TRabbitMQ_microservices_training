@@ -17,5 +17,7 @@ npm install @types/node --save-dev
 npm install mysql --save
 
 // install rabbitmq
+// https://github.com/amqp-node/amqplib
+// https://www.npmjs.com/package/amqplib\//https://www.cloudamqp.com/
 npm i amqplib
 npm i -D @types/amqplib

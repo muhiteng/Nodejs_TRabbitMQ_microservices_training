@@ -5,6 +5,9 @@ import { AppDataSource } from "./entity/data-source";
 import { Product } from "./entity/product";
 const amqplib = require("amqplib/callback_api");
 const queue = "products";
+const createProductQueue = "createProduct";
+const updateProductQueue = "updateProduct";
+const deleteProductQueue = "deleteProduct";
 
 const PORT = 8001;
 
@@ -21,8 +24,11 @@ AppDataSource.initialize()
         conn.createChannel((err, ch2) => {
           if (err) throw err;
           ch2.assertQueue(queue);
+          ch2.assertQueue(createProductQueue);
+          ch2.assertQueue(updateProductQueue);
+          ch2.assertQueue(deleteProductQueue);
 
-          // Rabbitmq listener
+          // Rabbitmq listener test
           ch2.consume(queue, (msg) => {
             if (msg !== null) {
               console.log(msg.content.toString());
@@ -31,6 +37,26 @@ AppDataSource.initialize()
               console.log("Consumer cancelled by server");
             }
           });
+
+          ch2.consume(createProductQueue, async (msg) => {
+            if (msg !== null) {
+              const eventProduct: Product = JSON.parse(msg.content.toString())
+
+              const product = new Product()
+              product.admin_id = parseInt(eventProduct.id)
+              product.title = eventProduct.title
+              product.image = eventProduct.image
+              product.likes = eventProduct.likes
+
+              await productRepository.save(product)
+              
+              console.log('product created')
+              ch2.ack(msg);
+            } else {
+              console.log("Consumer cancelled by server");
+            }
+          });
+
           const app = express();
           app.use(express.json());
 
@@ -42,6 +68,10 @@ AppDataSource.initialize()
 
           app.listen(PORT, () => {
             console.log(`Server working on port ${PORT}`);
+          });
+          process.on("beforeExit", () => {
+            console.log("closing rabbitMq conection");
+            conn.close();
           });
         });
       }

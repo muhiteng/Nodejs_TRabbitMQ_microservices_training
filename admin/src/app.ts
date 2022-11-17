@@ -5,6 +5,9 @@ import { AppDataSource } from "./entity/data-source";
 import { Product } from "./entity/product";
 const amqplib = require("amqplib/callback_api");
 const queue = "products";
+const createProductQueue = "createProduct";
+const updateProductQueue = "updateProduct";
+const deleteProductQueue = "deleteProduct";
 
 const PORT = 8000;
 
@@ -32,17 +35,24 @@ AppDataSource.initialize()
           app.get("/api/products", async (req: Request, res: Response) => {
             const products = await productRepository.find();
 
-            // rabbitmq sender
+            // rabbitmq sender test
             ch.assertQueue(queue);
-            
-              ch.sendToQueue(queue, Buffer.from("sended products"));
-           
+            ch.sendToQueue(queue, Buffer.from("sended products"));
+
             res.status(200).json(products);
           });
 
           app.post("/api/products", async (req: Request, res: Response) => {
             const product = await productRepository.create(req.body);
             const result = await productRepository.save(product);
+
+            // rabbitmq sender
+            ch.assertQueue(createProductQueue);
+            ch.sendToQueue(
+              createProductQueue,
+              Buffer.from(JSON.stringify(result))
+            );
+
             return res.send(result);
           });
 
@@ -60,6 +70,12 @@ AppDataSource.initialize()
             productRepository.merge(product, req.body);
             const result = await productRepository.save(product);
 
+            // rabbitmq sender
+            ch.assertQueue(updateProductQueue);
+            ch.sendToQueue(
+              updateProductQueue,
+              Buffer.from(JSON.stringify(result))
+            );
             return res.send(result);
           });
 
@@ -67,6 +83,10 @@ AppDataSource.initialize()
             "/api/products/:id",
             async (req: Request, res: Response) => {
               const result = await productRepository.delete(req.params.id);
+
+              // rabbitmq sender
+              ch.assertQueue(deleteProductQueue);
+              ch.sendToQueue(deleteProductQueue, Buffer.from(req.params.id));
 
               return res.send(result);
             }
@@ -87,6 +107,10 @@ AppDataSource.initialize()
 
           app.listen(PORT, () => {
             console.log(`Server working on port ${PORT}`);
+          });
+          process.on("beforeExit", () => {
+            console.log("closing rabbitMq conection");
+            conn.close();
           });
         });
       }

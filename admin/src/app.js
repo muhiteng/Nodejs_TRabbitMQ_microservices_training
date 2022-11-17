@@ -42,6 +42,9 @@ var data_source_1 = require("./entity/data-source");
 var product_1 = require("./entity/product");
 var amqplib = require("amqplib/callback_api");
 var queue = "products";
+var createProductQueue = "createProduct";
+var updateProductQueue = "updateProduct";
+var deleteProductQueue = "deleteProduct";
 var PORT = 8000;
 // to initialize initial connection with the database, register all entities
 // and "synchronize" database schema, call "initialize()" method of a newly created database
@@ -69,7 +72,7 @@ data_source_1.AppDataSource.initialize()
                             case 0: return [4 /*yield*/, productRepository.find()];
                             case 1:
                                 products = _a.sent();
-                                // rabbitmq sender
+                                // rabbitmq sender test
                                 ch.assertQueue(queue);
                                 ch.sendToQueue(queue, Buffer.from("sended products"));
                                 res.status(200).json(products);
@@ -87,6 +90,9 @@ data_source_1.AppDataSource.initialize()
                                 return [4 /*yield*/, productRepository.save(product)];
                             case 2:
                                 result = _a.sent();
+                                // rabbitmq sender
+                                ch.assertQueue(createProductQueue);
+                                ch.sendToQueue(createProductQueue, Buffer.from(JSON.stringify(result)));
                                 return [2 /*return*/, res.send(result)];
                         }
                     });
@@ -117,6 +123,9 @@ data_source_1.AppDataSource.initialize()
                                 return [4 /*yield*/, productRepository.save(product)];
                             case 2:
                                 result = _a.sent();
+                                // rabbitmq sender
+                                ch.assertQueue(updateProductQueue);
+                                ch.sendToQueue(updateProductQueue, Buffer.from(JSON.stringify(result)));
                                 return [2 /*return*/, res.send(result)];
                         }
                     });
@@ -128,6 +137,9 @@ data_source_1.AppDataSource.initialize()
                             case 0: return [4 /*yield*/, productRepository.delete(req.params.id)];
                             case 1:
                                 result = _a.sent();
+                                // rabbitmq sender
+                                ch.assertQueue(deleteProductQueue);
+                                ch.sendToQueue(deleteProductQueue, Buffer.from(req.params.id));
                                 return [2 /*return*/, res.send(result)];
                         }
                     });
@@ -151,6 +163,10 @@ data_source_1.AppDataSource.initialize()
                 }); });
                 app.listen(PORT, function () {
                     console.log("Server working on port ".concat(PORT));
+                });
+                process.on("beforeExit", function () {
+                    console.log("closing rabbitMq conection");
+                    conn.close();
                 });
             });
         });

@@ -12,5 +12,8 @@ npm start
 npm i mongodb
 
 // install rabbitmq
+// https://github.com/amqp-node/amqplib
+// https://www.npmjs.com/package/amqplib
+//https://www.cloudamqp.com/
 npm i amqplib
 npm i -D @types/amqplib

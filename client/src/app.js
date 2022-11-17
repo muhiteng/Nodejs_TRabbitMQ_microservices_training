@@ -42,6 +42,9 @@ var data_source_1 = require("./entity/data-source");
 var product_1 = require("./entity/product");
 var amqplib = require("amqplib/callback_api");
 var queue = "products";
+var createProductQueue = "createProduct";
+var updateProductQueue = "updateProduct";
+var deleteProductQueue = "deleteProduct";
 var PORT = 8001;
 // to initialize initial connection with the database, register all entities
 // and "synchronize" database schema, call "initialize()" method of a newly created database
@@ -57,7 +60,10 @@ data_source_1.AppDataSource.initialize()
                 if (err)
                     throw err;
                 ch2.assertQueue(queue);
-                // Rabbitmq listener
+                ch2.assertQueue(createProductQueue);
+                ch2.assertQueue(updateProductQueue);
+                ch2.assertQueue(deleteProductQueue);
+                // Rabbitmq listener test
                 ch2.consume(queue, function (msg) {
                     if (msg !== null) {
                         console.log(msg.content.toString());
@@ -67,6 +73,31 @@ data_source_1.AppDataSource.initialize()
                         console.log("Consumer cancelled by server");
                     }
                 });
+                ch2.consume(createProductQueue, function (msg) { return __awaiter(void 0, void 0, void 0, function () {
+                    var eventProduct, product;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                if (!(msg !== null)) return [3 /*break*/, 2];
+                                eventProduct = JSON.parse(msg.content.toString());
+                                product = new product_1.Product();
+                                product.admin_id = parseInt(eventProduct.id);
+                                product.title = eventProduct.title;
+                                product.image = eventProduct.image;
+                                product.likes = eventProduct.likes;
+                                return [4 /*yield*/, productRepository.save(product)];
+                            case 1:
+                                _a.sent();
+                                console.log('product created');
+                                ch2.ack(msg);
+                                return [3 /*break*/, 3];
+                            case 2:
+                                console.log("Consumer cancelled by server");
+                                _a.label = 3;
+                            case 3: return [2 /*return*/];
+                        }
+                    });
+                }); });
                 var app = express();
                 app.use(express.json());
                 app.use(cors({ origins: ["http://localhost:3000"] }));
@@ -75,6 +106,10 @@ data_source_1.AppDataSource.initialize()
                 // routes
                 app.listen(PORT, function () {
                     console.log("Server working on port ".concat(PORT));
+                });
+                process.on("beforeExit", function () {
+                    console.log("closing rabbitMq conection");
+                    conn.close();
                 });
             });
         });
