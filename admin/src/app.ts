@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import * as cors from "cors";
 import { AppDataSource } from "./entity/data-source";
 import { Product } from "./entity/product";
+const amqplib = require("amqplib/callback_api");
 
 const PORT = 8000;
 
@@ -12,61 +13,77 @@ const PORT = 8000;
 AppDataSource.initialize()
   .then(async (db) => {
     // here you can start to work with your database
-    const app = express();
-    app.use(express.json());
 
-    app.use(cors({ origins: ["http://localhost:3000"] }));
+    amqplib.connect(
+      "amqps://kiubzbaf:SzQ8y_I46ITK_aLw1O9nIKNn3pNEmacU@woodpecker.rmq.cloudamqp.com/kiubzbaf",
+      (err, conn) => {
+        if (err) throw err;
+        conn.createChannel((err, ch2) => {
+          if (err) throw err;
+          const app = express();
+          app.use(express.json());
 
-    // Repositories
-    const productRepository = AppDataSource.getRepository(Product);
-    // routes
-    app.get("/api/products", async (req: Request, res: Response) => {
-      const products = await productRepository.find();
+          app.use(cors({ origins: ["http://localhost:3000"] }));
 
-      res.status(200).json(products);
-    });
+          // Repositories
+          const productRepository = AppDataSource.getRepository(Product);
+          // routes
+          app.get("/api/products", async (req: Request, res: Response) => {
+            const products = await productRepository.find();
 
-    app.post("/api/products", async (req: Request, res: Response) => {
-      const product = await productRepository.create(req.body);
-      const result = await productRepository.save(product);
-      return res.send(result);
-    });
+            res.status(200).json(products);
+          });
 
-    app.get("/api/products/:id", async (req: Request, res: Response) => {
-      const product = await productRepository.findOneBy({
-        id: req.params.id,
-      });
-      return res.send(product);
-    });
+          app.post("/api/products", async (req: Request, res: Response) => {
+            const product = await productRepository.create(req.body);
+            const result = await productRepository.save(product);
+            return res.send(result);
+          });
 
-    app.put("/api/products/:id", async (req: Request, res: Response) => {
-      const product = await productRepository.findOneBy({
-        id: req.params.id,
-      });
-      productRepository.merge(product, req.body);
-      const result = await productRepository.save(product);
+          app.get("/api/products/:id", async (req: Request, res: Response) => {
+            const product = await productRepository.findOneBy({
+              id: req.params.id,
+            });
+            return res.send(product);
+          });
 
-      return res.send(result);
-    });
+          app.put("/api/products/:id", async (req: Request, res: Response) => {
+            const product = await productRepository.findOneBy({
+              id: req.params.id,
+            });
+            productRepository.merge(product, req.body);
+            const result = await productRepository.save(product);
 
-    app.delete("/api/products/:id", async (req: Request, res: Response) => {
-      const result = await productRepository.delete(req.params.id);
+            return res.send(result);
+          });
 
-      return res.send(result);
-    });
+          app.delete(
+            "/api/products/:id",
+            async (req: Request, res: Response) => {
+              const result = await productRepository.delete(req.params.id);
 
-    app.post("/api/products/:id/like", async (req: Request, res: Response) => {
-      const product = await productRepository.findOneBy({
-        id: req.params.id,
-      });
-      product.likes++;
+              return res.send(result);
+            }
+          );
 
-      const result = await productRepository.save(product);
-      return res.send(result);
-    });
+          app.post(
+            "/api/products/:id/like",
+            async (req: Request, res: Response) => {
+              const product = await productRepository.findOneBy({
+                id: req.params.id,
+              });
+              product.likes++;
 
-    app.listen(PORT, () => {
-      console.log(`Server working on port ${PORT}`);
-    });
+              const result = await productRepository.save(product);
+              return res.send(result);
+            }
+          );
+
+          app.listen(PORT, () => {
+            console.log(`Server working on port ${PORT}`);
+          });
+        });
+      }
+    );
   })
   .catch((error) => console.log(error));

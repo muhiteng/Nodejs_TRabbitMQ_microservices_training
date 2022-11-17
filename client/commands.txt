@@ -10,3 +10,7 @@ tsc -w
 npm start
 // install mongodb 
 npm i mongodb
+
+// install rabbitmq
+npm i amqplib
+npm i -D @types/amqplib

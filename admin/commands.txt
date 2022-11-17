@@ -15,3 +15,7 @@ npm install typeorm --save
 npm install reflect-metadata --save
 npm install @types/node --save-dev
 npm install mysql --save
+
+// install rabbitmq
+npm i amqplib
+npm i -D @types/amqplib

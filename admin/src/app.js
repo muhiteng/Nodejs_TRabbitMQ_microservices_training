@@ -40,105 +40,115 @@ var express = require("express");
 var cors = require("cors");
 var data_source_1 = require("./entity/data-source");
 var product_1 = require("./entity/product");
+var amqplib = require("amqplib/callback_api");
 var PORT = 8000;
 // to initialize initial connection with the database, register all entities
 // and "synchronize" database schema, call "initialize()" method of a newly created database
 // once in your application bootstrap
 data_source_1.AppDataSource.initialize()
     .then(function (db) { return __awaiter(void 0, void 0, void 0, function () {
-    var app, productRepository;
     return __generator(this, function (_a) {
-        app = express();
-        app.use(express.json());
-        app.use(cors({ origins: ["http://localhost:3000"] }));
-        productRepository = data_source_1.AppDataSource.getRepository(product_1.Product);
-        // routes
-        app.get("/api/products", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-            var products;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, productRepository.find()];
-                    case 1:
-                        products = _a.sent();
-                        res.status(200).json(products);
-                        return [2 /*return*/];
-                }
+        // here you can start to work with your database
+        amqplib.connect("amqps://kiubzbaf:SzQ8y_I46ITK_aLw1O9nIKNn3pNEmacU@woodpecker.rmq.cloudamqp.com/kiubzbaf", function (err, conn) {
+            if (err)
+                throw err;
+            conn.createChannel(function (err, ch2) {
+                if (err)
+                    throw err;
+                var app = express();
+                app.use(express.json());
+                app.use(cors({ origins: ["http://localhost:3000"] }));
+                // Repositories
+                var productRepository = data_source_1.AppDataSource.getRepository(product_1.Product);
+                // routes
+                app.get("/api/products", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+                    var products;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, productRepository.find()];
+                            case 1:
+                                products = _a.sent();
+                                res.status(200).json(products);
+                                return [2 /*return*/];
+                        }
+                    });
+                }); });
+                app.post("/api/products", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+                    var product, result;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, productRepository.create(req.body)];
+                            case 1:
+                                product = _a.sent();
+                                return [4 /*yield*/, productRepository.save(product)];
+                            case 2:
+                                result = _a.sent();
+                                return [2 /*return*/, res.send(result)];
+                        }
+                    });
+                }); });
+                app.get("/api/products/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+                    var product;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, productRepository.findOneBy({
+                                    id: req.params.id,
+                                })];
+                            case 1:
+                                product = _a.sent();
+                                return [2 /*return*/, res.send(product)];
+                        }
+                    });
+                }); });
+                app.put("/api/products/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+                    var product, result;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, productRepository.findOneBy({
+                                    id: req.params.id,
+                                })];
+                            case 1:
+                                product = _a.sent();
+                                productRepository.merge(product, req.body);
+                                return [4 /*yield*/, productRepository.save(product)];
+                            case 2:
+                                result = _a.sent();
+                                return [2 /*return*/, res.send(result)];
+                        }
+                    });
+                }); });
+                app.delete("/api/products/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+                    var result;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, productRepository.delete(req.params.id)];
+                            case 1:
+                                result = _a.sent();
+                                return [2 /*return*/, res.send(result)];
+                        }
+                    });
+                }); });
+                app.post("/api/products/:id/like", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+                    var product, result;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, productRepository.findOneBy({
+                                    id: req.params.id,
+                                })];
+                            case 1:
+                                product = _a.sent();
+                                product.likes++;
+                                return [4 /*yield*/, productRepository.save(product)];
+                            case 2:
+                                result = _a.sent();
+                                return [2 /*return*/, res.send(result)];
+                        }
+                    });
+                }); });
+                app.listen(PORT, function () {
+                    console.log("Server working on port ".concat(PORT));
+                });
             });
-        }); });
-        app.post("/api/products", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-            var product, result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, productRepository.create(req.body)];
-                    case 1:
-                        product = _a.sent();
-                        return [4 /*yield*/, productRepository.save(product)];
-                    case 2:
-                        result = _a.sent();
-                        return [2 /*return*/, res.send(result)];
-                }
-            });
-        }); });
-        app.get("/api/products/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-            var product;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, productRepository.findOneBy({
-                            id: req.params.id,
-                        })];
-                    case 1:
-                        product = _a.sent();
-                        return [2 /*return*/, res.send(product)];
-                }
-            });
-        }); });
-        app.put("/api/products/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-            var product, result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, productRepository.findOneBy({
-                            id: req.params.id,
-                        })];
-                    case 1:
-                        product = _a.sent();
-                        productRepository.merge(product, req.body);
-                        return [4 /*yield*/, productRepository.save(product)];
-                    case 2:
-                        result = _a.sent();
-                        return [2 /*return*/, res.send(result)];
-                }
-            });
-        }); });
-        app.delete("/api/products/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-            var result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, productRepository.delete(req.params.id)];
-                    case 1:
-                        result = _a.sent();
-                        return [2 /*return*/, res.send(result)];
-                }
-            });
-        }); });
-        app.post("/api/products/:id/like", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-            var product, result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, productRepository.findOneBy({
-                            id: req.params.id,
-                        })];
-                    case 1:
-                        product = _a.sent();
-                        product.likes++;
-                        return [4 /*yield*/, productRepository.save(product)];
-                    case 2:
-                        result = _a.sent();
-                        return [2 /*return*/, res.send(result)];
-                }
-            });
-        }); });
-        app.listen(PORT, function () {
-            console.log("Server working on port ".concat(PORT));
         });
         return [2 /*return*/];
     });
