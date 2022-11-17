@@ -88,7 +88,58 @@ data_source_1.AppDataSource.initialize()
                                 return [4 /*yield*/, productRepository.save(product)];
                             case 1:
                                 _a.sent();
-                                console.log('product created');
+                                console.log("product created");
+                                ch2.ack(msg);
+                                return [3 /*break*/, 3];
+                            case 2:
+                                console.log("Consumer cancelled by server");
+                                _a.label = 3;
+                            case 3: return [2 /*return*/];
+                        }
+                    });
+                }); });
+                ch2.consume(updateProductQueue, function (msg) { return __awaiter(void 0, void 0, void 0, function () {
+                    var eventProduct, product;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                if (!(msg !== null)) return [3 /*break*/, 3];
+                                eventProduct = JSON.parse(msg.content.toString());
+                                return [4 /*yield*/, productRepository.findOneBy({
+                                        admin_id: parseInt(eventProduct.id),
+                                    })];
+                            case 1:
+                                product = _a.sent();
+                                productRepository.merge(product, {
+                                    title: eventProduct.title,
+                                    image: eventProduct.image,
+                                    likes: eventProduct.likes,
+                                });
+                                return [4 /*yield*/, productRepository.save(product)];
+                            case 2:
+                                _a.sent();
+                                console.log("product updated");
+                                ch2.ack(msg);
+                                return [3 /*break*/, 4];
+                            case 3:
+                                console.log("Consumer cancelled by server");
+                                _a.label = 4;
+                            case 4: return [2 /*return*/];
+                        }
+                    });
+                }); });
+                ch2.consume(deleteProductQueue, function (msg) { return __awaiter(void 0, void 0, void 0, function () {
+                    var eventProduct, admin_id;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                if (!(msg !== null)) return [3 /*break*/, 2];
+                                eventProduct = JSON.parse(msg.content.toString());
+                                admin_id = parseInt(msg.content.toString());
+                                return [4 /*yield*/, productRepository.delete({ admin_id: admin_id })];
+                            case 1:
+                                _a.sent();
+                                console.log("product deleted");
                                 ch2.ack(msg);
                                 return [3 /*break*/, 3];
                             case 2:

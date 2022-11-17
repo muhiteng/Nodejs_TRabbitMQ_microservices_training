@@ -40,17 +40,50 @@ AppDataSource.initialize()
 
           ch2.consume(createProductQueue, async (msg) => {
             if (msg !== null) {
-              const eventProduct: Product = JSON.parse(msg.content.toString())
+              const eventProduct: Product = JSON.parse(msg.content.toString());
 
-              const product = new Product()
-              product.admin_id = parseInt(eventProduct.id)
-              product.title = eventProduct.title
-              product.image = eventProduct.image
-              product.likes = eventProduct.likes
+              const product = new Product();
+              product.admin_id = parseInt(eventProduct.id);
+              product.title = eventProduct.title;
+              product.image = eventProduct.image;
+              product.likes = eventProduct.likes;
 
-              await productRepository.save(product)
-              
-              console.log('product created')
+              await productRepository.save(product);
+
+              console.log("product created");
+              ch2.ack(msg);
+            } else {
+              console.log("Consumer cancelled by server");
+            }
+          });
+
+          ch2.consume(updateProductQueue, async (msg) => {
+            if (msg !== null) {
+              const eventProduct: Product = JSON.parse(msg.content.toString());
+
+              const product = await productRepository.findOneBy({
+                admin_id: parseInt(eventProduct.id),
+              });
+              productRepository.merge(product, {
+                title: eventProduct.title,
+                image: eventProduct.image,
+                likes: eventProduct.likes,
+              });
+              await productRepository.save(product);
+              console.log("product updated");
+              ch2.ack(msg);
+            } else {
+              console.log("Consumer cancelled by server");
+            }
+          });
+
+          ch2.consume(deleteProductQueue, async (msg) => {
+            if (msg !== null) {
+              const eventProduct: Product = JSON.parse(msg.content.toString());
+
+              const admin_id = parseInt(msg.content.toString());
+              await productRepository.delete({ admin_id });
+              console.log("product deleted");
               ch2.ack(msg);
             } else {
               console.log("Consumer cancelled by server");
