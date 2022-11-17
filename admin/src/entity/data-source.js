@@ -13,5 +13,5 @@ exports.AppDataSource = new typeorm_1.DataSource({
     database: "node_admin_db",
     entities: [product_1.Product, user_entity_1.User],
     synchronize: true,
-    logging: true,
+    logging: false,
 });

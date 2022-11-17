@@ -1,4 +1,4 @@
-import { User } from './user.entity';
+import { User } from "./user.entity";
 import { DataSource } from "typeorm";
 import { Product } from "./product";
 
@@ -9,7 +9,7 @@ export const AppDataSource = new DataSource({
   username: "root",
   password: "",
   database: "node_admin_db",
-  entities: [Product,User],
+  entities: [Product, User],
   synchronize: true,
-  logging: true,
+  logging: false,
 });

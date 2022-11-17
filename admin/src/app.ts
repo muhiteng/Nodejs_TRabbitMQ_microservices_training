@@ -14,7 +14,18 @@ AppDataSource.initialize()
     // here you can start to work with your database
     const app = express();
     app.use(express.json());
+
     app.use(cors({ origins: ["http://localhost:3000"] }));
+
+    // Repositories
+    const productRepository = AppDataSource.getRepository(Product);
+    // routes
+    app.get("/api/products", async (req: Request, res: Response) => {
+      const products = await productRepository.find();
+
+      res.status(200).json(products);
+    });
+
     app.listen(PORT, () => {
       console.log(`Server working on port ${PORT}`);
     });

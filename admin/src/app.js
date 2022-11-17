@@ -39,17 +39,32 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var express = require("express");
 var cors = require("cors");
 var data_source_1 = require("./entity/data-source");
+var product_1 = require("./entity/product");
 var PORT = 8000;
 // to initialize initial connection with the database, register all entities
 // and "synchronize" database schema, call "initialize()" method of a newly created database
 // once in your application bootstrap
 data_source_1.AppDataSource.initialize()
     .then(function (db) { return __awaiter(void 0, void 0, void 0, function () {
-    var app;
+    var app, productRepository;
     return __generator(this, function (_a) {
         app = express();
         app.use(express.json());
         app.use(cors({ origins: ["http://localhost:3000"] }));
+        productRepository = data_source_1.AppDataSource.getRepository(product_1.Product);
+        // routes
+        app.get("/api/products", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+            var products;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, productRepository.find()];
+                    case 1:
+                        products = _a.sent();
+                        res.status(200).json(products);
+                        return [2 /*return*/];
+                }
+            });
+        }); });
         app.listen(PORT, function () {
             console.log("Server working on port ".concat(PORT));
         });
