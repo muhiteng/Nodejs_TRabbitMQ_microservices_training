@@ -32,6 +32,29 @@ AppDataSource.initialize()
       return res.send(result);
     });
 
+    app.get("/api/products/:id", async (req: Request, res: Response) => {
+      const product = await productRepository.findOneBy({
+        id: req.params.id,
+      });
+      return res.send(product);
+    });
+
+    app.put("/api/products/:id", async (req: Request, res: Response) => {
+      const product = await productRepository.findOneBy({
+        id: req.params.id,
+      });
+      productRepository.merge(product, req.body);
+      const result = await productRepository.save(product);
+
+      return res.send(result);
+    });
+
+    app.delete("/api/products/:id", async (req: Request, res: Response) => {
+      const result = await productRepository.delete(req.params.id);
+
+      return res.send(result);
+    });
+
     app.listen(PORT, () => {
       console.log(`Server working on port ${PORT}`);
     });
