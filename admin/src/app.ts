@@ -26,6 +26,12 @@ AppDataSource.initialize()
       res.status(200).json(products);
     });
 
+    app.post("/api/products", async (req: Request, res: Response) => {
+      const product = await productRepository.create(req.body);
+      const result = await productRepository.save(product);
+      return res.send(result);
+    });
+
     app.listen(PORT, () => {
       console.log(`Server working on port ${PORT}`);
     });
