@@ -18,5 +18,5 @@ npm i mongodb
 npm i amqplib
 npm i -D @types/amqplib
 
-// install axios
+// install axios for direct api call
 npm i axios
