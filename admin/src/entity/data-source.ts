@@ -1,4 +1,6 @@
+import { User } from './user.entity';
 import { DataSource } from "typeorm";
+import { Product } from "./product";
 
 export const AppDataSource = new DataSource({
   type: "mysql",
@@ -7,8 +9,7 @@ export const AppDataSource = new DataSource({
   username: "root",
   password: "",
   database: "node_admin_db",
-  entities: ["src/entity/*.js"],
-  migrations: [],
-  logging: false,
+  entities: [Product,User],
   synchronize: true,
+  logging: true,
 });
