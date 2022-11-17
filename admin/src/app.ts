@@ -60,6 +60,7 @@ AppDataSource.initialize()
         id: req.params.id,
       });
       product.likes++;
+
       const result = await productRepository.save(product);
       return res.send(result);
     });
