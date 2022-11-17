@@ -2,3 +2,9 @@ npm init -y
 npm i express 
 npm i cors
 npm i -D @types/express @types/node nodemon typescript
+// to convert ts to js 
+tsc
+// to convert ts to js and listen changes (use  watch flag)
+tsc -w
+// using nodemon now after adding start command to scripts in  package.json
+npm start
