@@ -155,6 +155,17 @@ data_source_1.AppDataSource.initialize()
                 // Repositories
                 var productRepository = data_source_1.AppDataSource.getRepository(product_1.Product);
                 // routes
+                app.get("/api/products", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+                    var products;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, productRepository.find()];
+                            case 1:
+                                products = _a.sent();
+                                return [2 /*return*/, res.send(products)];
+                        }
+                    });
+                }); });
                 app.listen(PORT, function () {
                     console.log("Server working on port ".concat(PORT));
                 });

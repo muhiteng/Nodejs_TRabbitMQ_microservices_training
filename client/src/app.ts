@@ -98,6 +98,10 @@ AppDataSource.initialize()
           // Repositories
           const productRepository = AppDataSource.getRepository(Product);
           // routes
+          app.get("/api/products", async (req: Request, res: Response) => {
+            const products = await productRepository.find();
+            return res.send(products);
+          });
 
           app.listen(PORT, () => {
             console.log(`Server working on port ${PORT}`);
