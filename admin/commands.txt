@@ -8,3 +8,8 @@ tsc
 tsc -w
 // using nodemon now after adding start command to scripts in  package.json
 npm start
+// use typeormnpackage for admin mysql database https://github.com/typeorm/typeorm
+npm install typeorm --save
+npm install reflect-metadata --save
+npm install @types/node --save-dev
+npm install mysql --save
